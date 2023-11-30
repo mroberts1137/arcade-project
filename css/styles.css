@@ -1,0 +1,19 @@
+body {
+  font-family: Arial;
+  margin: 0;
+}
+
+.title {
+  margin: auto;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.game-window {
+  background-color: gray;
+  border: solid black 2px;
+  margin: auto;
+  margin-top: 50px;
+  width: 75%;
+  height: 500px;
+}
