@@ -1,4 +1,4 @@
-export class Player {
+export default class Player {
   constructor(x, y) {
     this.playerImage = new Image();
     this.playerImage.src = 'assets/sprites/shadow_dog.png';

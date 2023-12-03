@@ -1,7 +1,7 @@
 /** @type {HTMLCanvasElement} */
 
 import { Enemy, Bat, Bat2, Ghost, Wheel } from './enemy.js';
-import { Player } from './player.js';
+import Player from './player.js';
 import Layer from './background.js';
 
 const canvas = document.getElementById('canvas1');
