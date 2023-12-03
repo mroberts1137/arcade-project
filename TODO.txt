@@ -1,0 +1,24 @@
+TODO List
+
+- game viewport aspect ratio/responsive
+- Player class -dm
+- Alien class -m
+- bullet class -d
+- game canvas -m
+- readme
+- UI/UX -dm
+- create git workflow/dev branches
+- game loop
+- graphics -d
+  -ship
+  -alien
+  -bullets
+
+
+Strech Goals:
+- user account/login/authentication
+  - cookies/session token/JWT
+  - save highscores
+
+  Note to Dezirae:
+  -After project is complete you should fork the git repo to your personal github account, that way you have a version for yourself to show off for jobs
