@@ -1,103 +1,83 @@
-export class Enemy {
-  constructor(x, y) {
-    this.gameFrame = 0;
-    this.image = new Image();
-    this.spriteScale = 2;
+import Entity from './entity.js';
 
-    // coordinates/hitbox
-    this.rect = {
-      x: x,
-      y: y,
-      width: 100,
-      height: 100
-    };
-
-    // animation frame & speed
-    this.frame = 0;
-    this.animationSpeed = Math.floor(Math.random() * 4) + 1;
-  }
-
-  update() {
-    this.gameFrame++;
-    this.move();
-    this.animateFrame();
-
-    // out-of-bounds
-    if (this.rect.x > window.global.CANVAS_WIDTH)
-      this.rect.x = -this.rect.width;
-    if (this.rect.x < -this.rect.width)
-      this.rect.x = window.global.CANVAS_WIDTH;
-    if (this.rect.y > window.global.CANVAS_HEIGHT)
-      this.rect.y = -this.rect.height;
-    if (this.rect.y < -this.rect.height)
-      this.rect.y = window.global.CANVAS_HEIGHT;
-  }
-  move() {}
-  animateFrame() {
-    if (this.gameFrame % (window.global.TICK_SPEED * this.animationSpeed) === 0)
-      this.frame > this.animationFrames ? (this.frame = 0) : this.frame++;
-  }
-  draw() {
-    if (window.debug.DRAW_HITBOX)
-      window.global.ctx.strokeRect(
-        this.rect.x,
-        this.rect.y,
-        this.rect.width,
-        this.rect.height
-      );
-    window.global.ctx.drawImage(
-      this.image,
-      this.frame * this.spriteWidth,
-      0,
-      this.spriteWidth,
-      this.spriteHeight,
-      this.rect.x,
-      this.rect.y,
-      this.rect.width,
-      this.rect.height
-    );
-  }
-}
-
-export class Bat extends Enemy {
-  constructor(x, y) {
-    super(x, y);
-    this.type = 'bat';
+export class Bat extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
     this.image.src = 'assets/sprites/enemy1.png';
-    this.behavior = 'shake';
     this.spriteWidth = 293;
     this.spriteHeight = 155;
+    this.spriteScale = 0.5;
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 4
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'bat';
+    this.behavior = 'shake';
     this.maxSpeed = 10;
-    this.animationFrames = 4;
-
-    this.rect.width = this.spriteWidth / this.spriteScale;
-    this.rect.height = this.spriteHeight / this.spriteScale;
-
     this.speed = (Math.random() * 2 - 1) * this.maxSpeed;
     this.direction = Math.random() * 360;
   }
 
-  move() {
+  move(deltaTime) {
+    super.move(deltaTime);
     this.direction = Math.random() * 360;
-    this.rect.x += this.speed * Math.cos((this.direction * Math.PI) / 180);
-    this.rect.y -= this.speed * Math.sin((this.direction * Math.PI) / 180);
+    this.x += this.speed * Math.cos((this.direction * Math.PI) / 180);
+    this.y -= this.speed * Math.sin((this.direction * Math.PI) / 180);
   }
 }
 
-export class Bat2 extends Enemy {
-  constructor(x, y) {
-    super(x, y);
-    this.type = 'bat2';
+export class Bat2 extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
     this.image.src = 'assets/sprites/enemy2.png';
-    this.behavior = 'leftSine';
     this.spriteWidth = 266;
     this.spriteHeight = 188;
+    this.spriteScale = 0.5;
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 4
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'bat2';
+    this.behavior = 'leftSine';
     this.maxSpeed = 10;
-    this.animationFrames = 4;
-
-    this.rect.width = this.spriteWidth / this.spriteScale;
-    this.rect.height = this.spriteHeight / this.spriteScale;
-
     this.speed = Math.random() * this.maxSpeed;
     this.direction = 180;
     this.amplitude = 10 * Math.random();
@@ -105,74 +85,270 @@ export class Bat2 extends Enemy {
     this.angle = 0;
   }
 
-  move() {
-    this.rect.x += this.speed * Math.cos((this.direction * Math.PI) / 180);
-    this.rect.y -=
-      this.amplitude * Math.sin(((this.angle % 360) * Math.PI) / 180);
+  move(deltaTime) {
+    this.x += this.speed * Math.cos((this.direction * Math.PI) / 180);
+    this.y -= this.amplitude * Math.sin(((this.angle % 360) * Math.PI) / 180);
     this.angle += this.angularSpeed;
   }
 }
 
-export class Ghost extends Enemy {
-  constructor(x, y) {
-    super(x, y);
-    this.type = 'ghost';
+export class Ghost extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
     this.image.src = 'assets/sprites/enemy3.png';
-    this.behavior = 'leftSine';
     this.spriteWidth = 218;
     this.spriteHeight = 177;
-    this.maxSpeed = 10;
-    this.animationFrames = 4;
+    this.spriteScale = 0.5;
 
-    this.rect.width = this.spriteWidth / this.spriteScale;
-    this.rect.height = this.spriteHeight / this.spriteScale;
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 4
+      }
+    ];
+    this.getSpriteAnimations();
 
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'ghost';
+    this.behavior = 'leftSine';
     this.angularSpeed = 4 * Math.random() + 1;
     this.angle = 0;
     this.nx = 1;
     this.ny = 2;
   }
 
-  move() {
-    this.rect.x =
-      ((window.global.CANVAS_WIDTH - this.rect.width) / 2) *
+  move(deltaTime) {
+    this.x =
+      ((window.global.CANVAS_WIDTH - this.width) / 2) *
       (Math.sin((this.nx * (this.angle % 360) * Math.PI) / 180) + 1);
-    this.rect.y =
-      ((window.global.CANVAS_HEIGHT - this.rect.height) / 2) *
+    this.y =
+      ((window.global.CANVAS_HEIGHT - this.height) / 2) *
       (Math.sin((this.ny * (this.angle % 360) * Math.PI) / 180) + 1);
     this.angle += this.angularSpeed;
   }
 }
 
-export class Wheel extends Enemy {
-  constructor(x, y) {
-    super(x, y);
-    this.type = 'wheel';
+export class Wheel extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
     this.image.src = 'assets/sprites/enemy4.png';
-    this.behavior = 'leftSine';
     this.spriteWidth = 213;
     this.spriteHeight = 213;
+    this.spriteScale = 0.5;
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 7
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'wheel';
+    this.behavior = 'leftSine';
     this.maxSpeed = 10;
-    this.animationFrames = 7;
-
-    this.rect.width = this.spriteWidth / this.spriteScale;
-    this.rect.height = this.spriteHeight / this.spriteScale;
-
     this.moveInterval = Math.floor(Math.random() * 200 + 50);
-    this.newX = this.rect.x;
-    this.newY = this.rect.y;
+    this.newX = this.x;
+    this.newY = this.y;
   }
 
-  move() {
+  move(deltaTime) {
     if (this.gameFrame % this.moveInterval === 0) {
-      this.newX =
-        Math.random() * (window.global.CANVAS_WIDTH - this.rect.width);
-      this.newY =
-        Math.random() * (window.global.CANVAS_HEIGHT - this.rect.height);
+      this.newX = Math.random() * (this.game.canvasWidth - this.width);
+      this.newY = Math.random() * (this.game.canvasHeight - this.height);
     }
-    let dx = this.rect.x - this.newX;
-    let dy = this.rect.y - this.newY;
-    this.rect.x -= dx / 20;
-    this.rect.y -= dy / 20;
+    let dx = this.x - this.newX;
+    let dy = this.y - this.newY;
+    this.x -= dx / 20;
+    this.y -= dy / 20;
+  }
+}
+
+export class Worm extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
+    this.image.src = 'assets/sprites/enemy_worm.png';
+    this.spriteWidth = 229;
+    this.spriteHeight = 171;
+    this.spriteScale = 0.5;
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 4
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'worm';
+    this.behavior = 'crawl';
+    this.maxSpeed = 0.5;
+    this.vx = -Math.random() * this.maxSpeed;
+  }
+
+  update(deltaTime) {
+    super.update(deltaTime);
+    // if (this.y < this.game.canvasHeight - 200) this.moveContact(270);
+  }
+
+  move(deltaTime) {
+    super.move(deltaTime);
+  }
+
+  moveContact(direction) {
+    if (direction === 270) {
+      for (let i = 0; i < 200; i++) {
+        if (this.y + i === this.game.canvasHeight - 100) {
+          this.y = this.y + i;
+          return;
+        }
+      }
+    }
+  }
+}
+
+export class Ghost2 extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
+    this.image.src = 'assets/sprites/enemy_ghost.png';
+    this.spriteWidth = 261;
+    this.spriteHeight = 209;
+    this.spriteScale = 0.5;
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 4
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'ghost2';
+    this.behavior = 'leftSine';
+    this.maxSpeed = 10;
+    this.speed = Math.random() * this.maxSpeed + 1;
+    this.direction = 180;
+    this.amplitude = 10 * Math.random();
+    this.angularSpeed = 10 * Math.random();
+    this.angle = 0;
+  }
+
+  move(deltaTime) {
+    this.x += this.speed * Math.cos((this.direction * Math.PI) / 180);
+    this.y += this.amplitude * Math.sin(((this.angle % 360) * Math.PI) / 180);
+    this.angle += this.angularSpeed;
+  }
+
+  draw(deltaTime) {
+    this.game.ctx.save();
+    this.game.ctx.globalAlpha = 0.6;
+    super.draw(deltaTime);
+    this.game.ctx.restore();
+  }
+}
+
+export class Spider extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
+    this.image.src = 'assets/sprites/enemy_spider.png';
+    this.spriteWidth = 310;
+    this.spriteHeight = 175;
+    this.spriteScale = 0.5;
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'idle',
+        frames: 4
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.width = this.spriteWidth * this.spriteScale;
+    this.height = this.spriteHeight * this.spriteScale;
+    this.hitbox.scale = 0.75;
+    this.hitbox.width = this.width * this.hitbox.scale;
+    this.hitbox.height = this.height * this.hitbox.scale;
+    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
+    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+
+    // enemy-specific properties
+    this.type = 'worm';
+    this.behavior = 'crawl';
+    this.maxSpeed = 0.5;
+    this.vy = Math.random() * this.maxSpeed;
+    this.maxLength = Math.random() * (this.game.canvasHeight - 100) + 100;
+  }
+
+  draw(deltaTime) {
+    this.game.ctx.beginPath();
+    this.game.ctx.moveTo(this.x + this.width * 0.5, 0);
+    this.game.ctx.lineTo(this.x + this.width * 0.5, this.y);
+    this.game.ctx.stroke();
+    super.draw(deltaTime);
+  }
+  move(deltaTime) {
+    super.move(deltaTime);
+    if (this.y > this.maxLength) this.vy *= -1;
+    if (this.y < 0) this.vy *= -1;
   }
 }
