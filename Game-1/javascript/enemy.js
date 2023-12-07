@@ -1,5 +1,9 @@
 import Entity from './entity.js';
 
+///////////////////////////////////////////
+// Bat Class
+///////////////////////////////////////////
+
 export class Bat extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
@@ -19,15 +23,14 @@ export class Bat extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'bat';
@@ -44,6 +47,10 @@ export class Bat extends Entity {
     this.y -= this.speed * Math.sin((this.direction * Math.PI) / 180);
   }
 }
+
+///////////////////////////////////////////
+// Bat2 Class
+///////////////////////////////////////////
 
 export class Bat2 extends Entity {
   constructor(game, x, y) {
@@ -64,15 +71,14 @@ export class Bat2 extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'bat2';
@@ -91,6 +97,10 @@ export class Bat2 extends Entity {
     this.angle += this.angularSpeed;
   }
 }
+
+///////////////////////////////////////////
+// Ghost Class
+///////////////////////////////////////////
 
 export class Ghost extends Entity {
   constructor(game, x, y) {
@@ -111,15 +121,14 @@ export class Ghost extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'ghost';
@@ -141,6 +150,10 @@ export class Ghost extends Entity {
   }
 }
 
+///////////////////////////////////////////
+// Wheel Class
+///////////////////////////////////////////
+
 export class Wheel extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
@@ -160,15 +173,14 @@ export class Wheel extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'wheel';
@@ -191,6 +203,10 @@ export class Wheel extends Entity {
   }
 }
 
+///////////////////////////////////////////
+// Worm Class
+///////////////////////////////////////////
+
 export class Worm extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
@@ -210,15 +226,14 @@ export class Worm extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'worm';
@@ -248,6 +263,10 @@ export class Worm extends Entity {
   }
 }
 
+///////////////////////////////////////////
+// Ghost2 Class
+///////////////////////////////////////////
+
 export class Ghost2 extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
@@ -267,15 +286,14 @@ export class Ghost2 extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'ghost2';
@@ -302,6 +320,10 @@ export class Ghost2 extends Entity {
   }
 }
 
+///////////////////////////////////////////
+// Spider Class
+///////////////////////////////////////////
+
 export class Spider extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
@@ -321,15 +343,14 @@ export class Spider extends Entity {
     this.getSpriteAnimations();
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = (1 - this.hitbox.scale) * this.height * 0.5;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
 
     // enemy-specific properties
     this.type = 'worm';
@@ -339,12 +360,12 @@ export class Spider extends Entity {
     this.maxLength = Math.random() * (this.game.canvasHeight - 100) + 100;
   }
 
-  draw(deltaTime) {
-    this.game.ctx.beginPath();
-    this.game.ctx.moveTo(this.x + this.width * 0.5, 0);
-    this.game.ctx.lineTo(this.x + this.width * 0.5, this.y);
-    this.game.ctx.stroke();
-    super.draw(deltaTime);
+  draw(ctx, deltaTime) {
+    ctx.beginPath();
+    ctx.moveTo(this.x + this.width * 0.5, 0);
+    ctx.lineTo(this.x + this.width * 0.5, this.y);
+    ctx.stroke();
+    super.draw(ctx, deltaTime);
   }
   move(deltaTime) {
     super.move(deltaTime);

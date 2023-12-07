@@ -8,6 +8,7 @@ export default class Entity {
     this.markedForDeletion = false;
     this.collisionId = 0;
     this.outOfBounds = 'wrap'; // out-of-bounds behavior
+    this.edgeOfBounds = 'wrap'; // behavior for reaching edge of screen
 
     // coordinates/hitbox
     this.x = x;
@@ -16,6 +17,10 @@ export default class Entity {
     this.vy = 0;
     this.ax = 0;
     this.ay = 0;
+    this.frictionX = 0;
+    this.frictionY = 0;
+    this.maxVx = 0.5;
+    this.maxVy = 0.5;
     this.width = 100;
     this.height = 100;
     this.hitbox = {
@@ -25,7 +30,11 @@ export default class Entity {
       height: 100,
       scale: 0.75,
       xOffset: 0,
-      yOffset: 0
+      yOffset: 0,
+      left: x,
+      right: 100,
+      top: y,
+      bottom: 100
     };
 
     // sprite/animation properties
@@ -61,6 +70,16 @@ export default class Entity {
     // update hitbox
     this.hitbox.x = this.x + this.hitbox.xOffset;
     this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.hitbox.left = this.x + this.hitbox.xOffset;
+    this.hitbox.right = this.x + this.hitbox.xOffset + this.hitbox.width;
+    this.hitbox.top = this.y + this.hitbox.yOffset;
+    this.hitbox.bottom = this.y + this.hitbox.yOffset + this.hitbox.height;
+
+    // edge-of-bounds
+    const leftEOB = this.x <= 0;
+    const rightEOB = this.x >= this.game.canvasWidth - this.width;
+    const topEOB = this.y <= 0;
+    const bottomEOB = this.y >= this.game.canvasHeight - this.height;
 
     // out-of-bounds
     const leftOOB = this.x < -this.width;
@@ -91,8 +110,36 @@ export default class Entity {
   }
 
   move(deltaTime) {
-    this.x += this.vx * deltaTime;
-    this.y += this.vy * deltaTime;
+    if (Math.abs(this.vx + this.ax) < this.maxVx) this.vx += this.ax;
+    //if (Math.abs(this.vy + this.ay) < this.maxVy)
+    this.vy += this.ay;
+    switch (this.edgeOfBounds) {
+      //case 'stop':
+      case 'wrap':
+        this.x += this.vx * deltaTime;
+        this.y += this.vy * deltaTime;
+        break;
+      case 'stop':
+        if (
+          this.hitbox.left + this.vx * deltaTime > 0 &&
+          this.hitbox.right + this.vx * deltaTime <= this.game.canvasWidth
+        ) {
+          this.x += this.vx * deltaTime;
+        } else {
+          this.vx = 0;
+          this.ax = 0;
+        }
+        if (
+          this.hitbox.top + this.vy * deltaTime > 0 &&
+          this.hitbox.bottom + this.vy * deltaTime <= this.game.canvasHeight
+        ) {
+          this.y += this.vy * deltaTime;
+        } else {
+          this.vy = 0;
+          this.ay = 0;
+        }
+        break;
+    }
   }
 
   getAnimation(deltaTime) {
@@ -108,17 +155,17 @@ export default class Entity {
     };
   }
 
-  draw(deltaTime) {
+  draw(ctx, deltaTime) {
     const { frameX, frameY } = this.getAnimation(deltaTime);
 
     if (window.debug.DRAW_HITBOX)
-      this.game.ctx.strokeRect(
+      ctx.strokeRect(
         this.hitbox.x,
         this.hitbox.y,
         this.hitbox.width,
         this.hitbox.height
       );
-    this.game.ctx.drawImage(
+    ctx.drawImage(
       this.image,
       frameX,
       frameY,
@@ -140,5 +187,27 @@ export default class Entity {
     )
       return false;
     else return true;
+  }
+
+  updateHitbox(
+    spriteWidth,
+    spriteHeight,
+    spriteScale,
+    scale,
+    xOffset,
+    yOffset
+  ) {
+    this.width = Math.floor(spriteWidth * spriteScale);
+    this.height = Math.floor(spriteHeight * spriteScale);
+    this.hitbox.width = Math.floor(this.width * scale);
+    this.hitbox.height = Math.floor(this.height * scale);
+    this.hitbox.xOffset = Math.floor((1 - scale) * this.width * 0.5);
+    this.hitbox.yOffset = Math.floor(this.height - this.hitbox.height);
+    this.hitbox.x = this.x + this.hitbox.xOffset;
+    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.hitbox.left = this.x + this.hitbox.xOffset;
+    this.hitbox.right = this.x + this.hitbox.xOffset + this.hitbox.width;
+    this.hitbox.top = this.y + this.hitbox.yOffset;
+    this.hitbox.bottom = this.y + this.hitbox.yOffset + this.hitbox.height;
   }
 }

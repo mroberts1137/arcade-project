@@ -1,7 +1,7 @@
 import Entity from './entity.js';
 
 export default class Player extends Entity {
-  constructor(game, x, y) {
+  constructor(game, x, y, input) {
     super(game, x, y);
     // sprite info
     this.image.src = 'assets/sprites/shadow_dog.png';
@@ -10,17 +10,21 @@ export default class Player extends Entity {
     this.spriteScale = 0.5;
 
     this.state = 'idle';
+    this.edgeOfBounds = 'stop';
+    this.input = input;
+
+    this.maxVx = 0.4;
+    this.maxVy = 1;
 
     // coordinates/hitbox
-    this.width = this.spriteWidth * this.spriteScale;
-    this.height = this.spriteHeight * this.spriteScale;
-    this.hitbox.scale = 0.75;
-    this.hitbox.width = this.width * this.hitbox.scale;
-    this.hitbox.height = this.height * this.hitbox.scale;
-    this.hitbox.xOffset = (1 - this.hitbox.scale) * this.width * 0.5;
-    this.hitbox.yOffset = this.height - this.hitbox.height;
-    this.hitbox.x = this.x + this.hitbox.xOffset;
-    this.hitbox.y = this.y + this.hitbox.yOffset;
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.65,
+      0,
+      0
+    );
 
     // sprite-sheet animations/frames
     this.animationStates = [
@@ -68,5 +72,38 @@ export default class Player extends Entity {
     this.getSpriteAnimations();
   }
 
-  move() {}
+  move(deltaTime) {
+    if (this.hitbox.bottom > this.game.canvasHeight - 18 && this.vy > 0) {
+      this.y =
+        this.game.canvasHeight - this.hitbox.yOffset - this.hitbox.height - 15;
+      this.vy = 0;
+      this.ay = 0;
+    }
+    if (this.input.keys.includes('ArrowRight')) {
+      if (this.hitbox.right + this.maxVx * deltaTime < this.game.canvasWidth) {
+        this.x += this.maxVx * deltaTime;
+      }
+      // this.ax = 0.002;
+      // this.frictionX = 0;
+    } else if (this.input.keys.includes('ArrowLeft')) {
+      if (this.hitbox.left - this.maxVx * deltaTime > 0) {
+        this.x -= this.maxVx * deltaTime;
+      }
+      // this.ax = -0.002;
+      // this.frictionX = 0;
+    } else {
+      // this.ax = 0;
+      // if (this.vx > 0) this.frictionX = -0.002;
+      // if (this.vx < 0) this.frictionX = 0.002;
+    }
+    if (this.input.keys.includes('Space')) {
+      if (this.hitbox.bottom >= this.game.canvasHeight - 18) {
+        this.vy = -this.maxVy;
+        this.ay = 0.04;
+      }
+    }
+    //console.log(this.vy, this.ay);
+
+    super.move(deltaTime);
+  }
 }

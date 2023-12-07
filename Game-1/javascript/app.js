@@ -7,7 +7,7 @@ import Layer from './background.js';
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 
-const CANVAS_WIDTH = (canvas.width = 800);
+const CANVAS_WIDTH = (canvas.width = 600);
 const CANVAS_HEIGHT = (canvas.height = 600);
 
 const pauseButton = document.querySelector('#pauseButton');
@@ -27,7 +27,7 @@ window.global = {
 };
 
 window.debug = {
-  DRAW_HITBOX: false
+  DRAW_HITBOX: true
 };
 
 const backgroundLayer1 = new Image();
@@ -51,9 +51,11 @@ class Game {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
 
+    this.inputHandler = new InputHandler();
+
     this.enemies = [];
     this.backgrounds = [];
-    this.player = new Player(this, 150, 320);
+    this.player = new Player(this, 150, 322, this.inputHandler);
     this.player.state = 'run';
     this.#addNewEnemy();
     this.#addBackground();
@@ -73,7 +75,7 @@ class Game {
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
     [...this.backgrounds, this.player, ...this.enemies].forEach((object) =>
-      object.draw(deltaTime)
+      object.draw(this.ctx, deltaTime)
     );
   }
 
@@ -99,6 +101,42 @@ class Game {
 }
 
 /////////////////////////////////////////////////////////////////
+// InputHandler Class
+/////////////////////////////////////////////////////////////////
+
+class InputHandler {
+  constructor() {
+    this.keys = [];
+    window.addEventListener('keydown', (e) => {
+      if (
+        (e.code === 'ArrowLeft' ||
+          e.code === 'ArrowRight' ||
+          e.code === 'ArrowUp' ||
+          e.code === 'ArrowDown' ||
+          e.code === 'Space') &&
+        !this.keys.includes(e.code)
+      ) {
+        this.keys.push(e.code);
+      }
+      //console.log(this.keys);
+    });
+    window.addEventListener('keyup', (e) => {
+      if (
+        e.code === 'ArrowLeft' ||
+        e.code === 'ArrowRight' ||
+        e.code === 'ArrowUp' ||
+        e.code === 'ArrowDown' ||
+        e.code === 'Space'
+      ) {
+        const idx = this.keys.indexOf(e.code);
+        this.keys.splice(idx, 1);
+      }
+      //console.log(this.keys);
+    });
+  }
+}
+
+/////////////////////////////////////////////////////////////////
 // GLOBAL FUNCTIONS
 /////////////////////////////////////////////////////////////////
 
@@ -111,6 +149,8 @@ function pauseGame() {
     pauseButton.innerText = 'Pause';
   }
 }
+
+function displayStatusText() {}
 
 /////////////////////////////////////////////////////////////////
 // GAME INITIALIZE
