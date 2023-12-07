@@ -13,6 +13,7 @@ TODO List
   -ship
   -alien
   -bullets
+- splash screen with game instructions
 
 
 Strech Goals:
