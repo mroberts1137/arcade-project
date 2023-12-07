@@ -1,24 +1,33 @@
-export class Player {
-  constructor(x, y) {
-    this.playerImage = new Image();
-    this.playerImage.src = 'assets/sprites/shadow_dog.png';
+import Entity from './entity.js';
+
+export default class Player extends Entity {
+  constructor(game, x, y, input) {
+    super(game, x, y);
+    // sprite info
+    this.image.src = 'assets/sprites/shadow_dog.png';
     this.spriteWidth = 575;
     this.spriteHeight = 523;
-    this.spriteScale = 2;
-    this.playerState = 'idle';
-    this.gameFrame = 0;
-    this.collisionId = 0;
+    this.spriteScale = 0.5;
+
+    this.state = 'idle';
+    this.edgeOfBounds = 'stop';
+    this.input = input;
+
+    this.maxVx = 0.4;
+    this.maxVy = 1;
 
     // coordinates/hitbox
-    this.rect = {
-      x: x,
-      y: y,
-      width: this.spriteWidth / this.spriteScale,
-      height: this.spriteHeight / this.spriteScale
-    };
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.65,
+      0,
+      0
+    );
 
-    this.spriteAnimations = [];
-    const animationStates = [
+    // sprite-sheet animations/frames
+    this.animationStates = [
       {
         name: 'idle',
         frames: 6
@@ -60,56 +69,41 @@ export class Player {
         frames: 4
       }
     ];
-
-    // calculate sprite positions in sprite sheet:
-    animationStates.forEach((state, index) => {
-      let frames = {
-        loc: []
-      };
-      for (let i = 0; i < state.frames; i++) {
-        let positionX = i * this.spriteWidth;
-        let positionY = index * this.spriteHeight;
-        frames.loc.push({ x: positionX, y: positionY });
-      }
-      this.spriteAnimations[state.name] = frames;
-    });
+    this.getSpriteAnimations();
   }
-  update() {
-    this.gameFrame++;
-  }
-  draw() {
-    let animationFrame =
-      Math.floor(this.gameFrame / window.global.TICK_SPEED) %
-      this.spriteAnimations[this.playerState].loc.length;
-    let frameX = this.spriteAnimations[this.playerState].loc[animationFrame].x;
-    let frameY = this.spriteAnimations[this.playerState].loc[animationFrame].y;
 
-    if (window.debug.DRAW_HITBOX) {
-      switch (this.collisionId) {
-        case 0:
-          window.global.ctx.fillStyle = 'white';
-          break;
-        case 1:
-          window.global.ctx.fillStyle = 'red';
-          break;
-      }
-      window.global.ctx.fillRect(
-        this.rect.x,
-        this.rect.y,
-        this.rect.width,
-        this.rect.height
-      );
+  move(deltaTime) {
+    if (this.hitbox.bottom > this.game.canvasHeight - 18 && this.vy > 0) {
+      this.y =
+        this.game.canvasHeight - this.hitbox.yOffset - this.hitbox.height - 15;
+      this.vy = 0;
+      this.ay = 0;
     }
-    window.global.ctx.drawImage(
-      this.playerImage,
-      frameX,
-      frameY,
-      this.spriteWidth,
-      this.spriteHeight,
-      this.rect.x,
-      this.rect.y,
-      this.rect.width,
-      this.rect.height
-    );
+    if (this.input.keys.includes('ArrowRight')) {
+      if (this.hitbox.right + this.maxVx * deltaTime < this.game.canvasWidth) {
+        this.x += this.maxVx * deltaTime;
+      }
+      // this.ax = 0.002;
+      // this.frictionX = 0;
+    } else if (this.input.keys.includes('ArrowLeft')) {
+      if (this.hitbox.left - this.maxVx * deltaTime > 0) {
+        this.x -= this.maxVx * deltaTime;
+      }
+      // this.ax = -0.002;
+      // this.frictionX = 0;
+    } else {
+      // this.ax = 0;
+      // if (this.vx > 0) this.frictionX = -0.002;
+      // if (this.vx < 0) this.frictionX = 0.002;
+    }
+    if (this.input.keys.includes('Space')) {
+      if (this.hitbox.bottom >= this.game.canvasHeight - 18) {
+        this.vy = -this.maxVy;
+        this.ay = 0.04;
+      }
+    }
+    //console.log(this.vy, this.ay);
+
+    super.move(deltaTime);
   }
 }
