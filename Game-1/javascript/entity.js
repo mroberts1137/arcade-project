@@ -21,6 +21,7 @@ export default class Entity {
     this.frictionY = 0;
     this.maxVx = 0.5;
     this.maxVy = 0.5;
+    this.solid = false;
     this.width = 100;
     this.height = 100;
     this.hitbox = {
@@ -49,20 +50,9 @@ export default class Entity {
     this.animationStates = []; // { animation state, frames }
   }
 
-  getSpriteAnimations() {
-    // calculate sprite positions in sprite sheet:
-    this.animationStates.forEach((state, index) => {
-      let frames = {
-        loc: []
-      };
-      for (let i = 0; i < state.frames; i++) {
-        let positionX = i * this.spriteWidth;
-        let positionY = index * this.spriteHeight;
-        frames.loc.push({ x: positionX, y: positionY });
-      }
-      this.spriteAnimations[state.name] = frames;
-    });
-  }
+  ////////////////////////////////////////////////////////////
+  // MOTION/LOGIC FUNCTIONS
+  ////////////////////////////////////////////////////////////
 
   update(deltaTime) {
     ++this.gameFrame;
@@ -111,10 +101,8 @@ export default class Entity {
 
   move(deltaTime) {
     if (Math.abs(this.vx + this.ax) < this.maxVx) this.vx += this.ax;
-    //if (Math.abs(this.vy + this.ay) < this.maxVy)
-    this.vy += this.ay;
+    if (Math.abs(this.vy + this.ay) < this.maxVy) this.vy += this.ay;
     switch (this.edgeOfBounds) {
-      //case 'stop':
       case 'wrap':
         this.x += this.vx * deltaTime;
         this.y += this.vy * deltaTime;
@@ -142,40 +130,10 @@ export default class Entity {
     }
   }
 
-  getAnimation(deltaTime) {
-    this.animationTick += deltaTime;
-    let sprite = this.spriteAnimations[this.state].loc;
-    if (this.animationTick > this.animationSpeed) {
-      this.animationTick = 0;
-      this.animationFrame = (this.animationFrame + 1) % sprite.length;
-    }
-    return {
-      frameX: sprite[this.animationFrame].x,
-      frameY: sprite[this.animationFrame].y
-    };
-  }
-
-  draw(ctx, deltaTime) {
-    const { frameX, frameY } = this.getAnimation(deltaTime);
-
-    if (window.debug.DRAW_HITBOX)
-      ctx.strokeRect(
-        this.hitbox.x,
-        this.hitbox.y,
-        this.hitbox.width,
-        this.hitbox.height
-      );
-    ctx.drawImage(
-      this.image,
-      frameX,
-      frameY,
-      this.spriteWidth,
-      this.spriteHeight,
-      this.x,
-      this.y,
-      this.width,
-      this.height
-    );
+  placeFree(x, y) {
+    if (y < this.game.ground) {
+      return true;
+    } else return false;
   }
 
   checkCollision(rect) {
@@ -209,5 +167,66 @@ export default class Entity {
     this.hitbox.right = this.x + this.hitbox.xOffset + this.hitbox.width;
     this.hitbox.top = this.y + this.hitbox.yOffset;
     this.hitbox.bottom = this.y + this.hitbox.yOffset + this.hitbox.height;
+  }
+
+  ////////////////////////////////////////////////////////////
+  // DRAWING FUNCTIONS
+  ////////////////////////////////////////////////////////////
+
+  draw(ctx, deltaTime) {
+    const { frameX, frameY } = this.getAnimation(deltaTime);
+
+    if (window.debug.DRAW_HITBOX)
+      ctx.strokeRect(
+        this.hitbox.x,
+        this.hitbox.y,
+        this.hitbox.width,
+        this.hitbox.height
+      );
+    ctx.drawImage(
+      this.image,
+      frameX,
+      frameY,
+      this.spriteWidth,
+      this.spriteHeight,
+      this.x,
+      this.y,
+      this.width,
+      this.height
+    );
+  }
+
+  getAnimation(deltaTime) {
+    this.animationTick += deltaTime;
+    try {
+      let sprite = this.spriteAnimations[this.state].loc;
+      if (this.animationTick > this.animationSpeed) {
+        this.animationTick = 0;
+        this.animationFrame = (this.animationFrame + 1) % sprite.length;
+      }
+      // in case sprite states have changed mid-animation and have different frame counts
+      this.animationFrame = this.animationFrame % sprite.length;
+      return {
+        frameX: sprite[this.animationFrame].x,
+        frameY: sprite[this.animationFrame].y
+      };
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  getSpriteAnimations() {
+    // calculate sprite positions in sprite sheet:
+    this.animationStates.forEach((state, index) => {
+      let frames = {
+        loc: []
+      };
+      for (let i = 0; i < state.frames; i++) {
+        let positionX = i * this.spriteWidth;
+        let positionY = index * this.spriteHeight;
+        frames.loc.push({ x: positionX, y: positionY });
+      }
+      this.spriteAnimations[state.name] = frames;
+    });
   }
 }

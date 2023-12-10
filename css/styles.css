@@ -79,3 +79,9 @@ p {
   font-size: 50px;
   margin-top: 40px;
 }
+
+.game-icon {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}

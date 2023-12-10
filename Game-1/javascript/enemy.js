@@ -49,23 +49,24 @@ export class Bat extends Entity {
 }
 
 ///////////////////////////////////////////
-// Bat2 Class
+// Bug Class
 ///////////////////////////////////////////
 
-export class Bat2 extends Entity {
+export class Bug extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
     // sprite info
-    this.image.src = 'assets/sprites/enemy2.png';
+    this.image.src = 'assets/sprites/purple_bug.png';
     this.spriteWidth = 266;
-    this.spriteHeight = 188;
-    this.spriteScale = 0.5;
+    this.spriteHeight = 207;
+    this.spriteScale = 0.4;
+    this.state = 'fly';
 
     // sprite-sheet animations/frames
     this.animationStates = [
       {
-        name: 'idle',
-        frames: 4
+        name: 'fly',
+        frames: 13
       }
     ];
     this.getSpriteAnimations();
@@ -81,41 +82,41 @@ export class Bat2 extends Entity {
     );
 
     // enemy-specific properties
-    this.type = 'bat2';
+    this.type = 'bug';
     this.behavior = 'leftSine';
-    this.maxSpeed = 10;
-    this.speed = Math.random() * this.maxSpeed;
-    this.direction = 180;
-    this.amplitude = 10 * Math.random();
-    this.angularSpeed = 10 * Math.random();
+    this.speedLevel = Math.random();
+    this.animationSpeed = 10 + Math.floor(20 * (1 - this.speedLevel));
+    this.speed = Math.floor(this.speedLevel * 7) + 2;
+    this.amplitude = 4 + Math.floor(this.speedLevel * 2);
+    this.angularSpeed = Math.floor(5 * this.speedLevel) + 1;
     this.angle = 0;
   }
 
   move(deltaTime) {
-    this.x += this.speed * Math.cos((this.direction * Math.PI) / 180);
-    this.y -= this.amplitude * Math.sin(((this.angle % 360) * Math.PI) / 180);
+    this.x -= this.speed;
+    this.y += this.amplitude * Math.sin(((this.angle % 360) * Math.PI) / 180);
     this.angle += this.angularSpeed;
   }
 }
 
 ///////////////////////////////////////////
-// Ghost Class
+// Bee Class
 ///////////////////////////////////////////
 
-export class Ghost extends Entity {
+export class Bee extends Entity {
   constructor(game, x, y) {
     super(game, x, y);
     // sprite info
-    this.image.src = 'assets/sprites/enemy3.png';
-    this.spriteWidth = 218;
-    this.spriteHeight = 177;
+    this.image.src = 'assets/sprites/bee.png';
+    this.spriteWidth = 273;
+    this.spriteHeight = 282;
     this.spriteScale = 0.5;
 
     // sprite-sheet animations/frames
     this.animationStates = [
       {
         name: 'idle',
-        frames: 4
+        frames: 12
       }
     ];
     this.getSpriteAnimations();
@@ -131,7 +132,7 @@ export class Ghost extends Entity {
     );
 
     // enemy-specific properties
-    this.type = 'ghost';
+    this.type = 'bee';
     this.behavior = 'leftSine';
     this.angularSpeed = 4 * Math.random() + 1;
     this.angle = 0;
@@ -141,10 +142,10 @@ export class Ghost extends Entity {
 
   move(deltaTime) {
     this.x =
-      ((window.global.CANVAS_WIDTH - this.width) / 2) *
-      (Math.sin((this.nx * (this.angle % 360) * Math.PI) / 180) + 1);
+      ((this.game.canvasWidth - this.width) / 4) *
+      (Math.sin((this.nx * (this.angle % 360) * Math.PI) / 180) + 2);
     this.y =
-      ((window.global.CANVAS_HEIGHT - this.height) / 2) *
+      ((this.game.canvasWidth - this.height) / 4) *
       (Math.sin((this.ny * (this.angle % 360) * Math.PI) / 180) + 1);
     this.angle += this.angularSpeed;
   }
@@ -312,11 +313,11 @@ export class Ghost2 extends Entity {
     this.angle += this.angularSpeed;
   }
 
-  draw(deltaTime) {
-    this.game.ctx.save();
-    this.game.ctx.globalAlpha = 0.6;
-    super.draw(deltaTime);
-    this.game.ctx.restore();
+  draw(ctx, deltaTime) {
+    ctx.save();
+    ctx.globalAlpha = 0.6;
+    super.draw(ctx, deltaTime);
+    ctx.restore();
   }
 }
 
@@ -371,5 +372,50 @@ export class Spider extends Entity {
     super.move(deltaTime);
     if (this.y > this.maxLength) this.vy *= -1;
     if (this.y < 0) this.vy *= -1;
+  }
+}
+
+///////////////////////////////////////////
+// Crawler Class
+///////////////////////////////////////////
+
+export class Crawler extends Entity {
+  constructor(game, x, y) {
+    super(game, x, y);
+    // sprite info
+    this.image.src = 'assets/sprites/crawler.png';
+    this.spriteWidth = 304;
+    this.spriteHeight = 197;
+    this.spriteScale = 0.5;
+    this.animationSpeed = 25;
+    this.state = 'walk';
+
+    // sprite-sheet animations/frames
+    this.animationStates = [
+      {
+        name: 'walk',
+        frames: 20
+      }
+    ];
+    this.getSpriteAnimations();
+
+    // coordinates/hitbox
+    this.updateHitbox(
+      this.spriteWidth,
+      this.spriteHeight,
+      this.spriteScale,
+      0.75,
+      0,
+      0
+    );
+
+    // enemy-specific properties
+    this.type = 'crawler';
+    this.behavior = 'walk';
+    this.speed = 4;
+  }
+
+  move(deltaTime) {
+    this.x -= this.speed;
   }
 }

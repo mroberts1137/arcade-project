@@ -1,5 +1,6 @@
 export default class Layer {
-  constructor(image, speedModifier) {
+  constructor(game, image, speedModifier) {
+    this.game = game;
     this.image = image;
     this.speedModifier = speedModifier;
     this.x = 0;
@@ -10,7 +11,7 @@ export default class Layer {
   }
 
   update() {
-    this.speed = window.global.TICK_SPEED * this.speedModifier;
+    this.speed = this.game.levelSpeed * this.speedModifier;
     if (this.x <= -this.width) this.x = 0;
     this.x = Math.floor(this.x - this.speed);
   }
