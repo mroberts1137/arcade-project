@@ -96,3 +96,7 @@ p {
   font-size: 50px;
   margin-top: 40px;
 }
+
+.line-through {
+  text-decoration: line-through;
+}
