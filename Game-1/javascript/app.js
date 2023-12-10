@@ -33,7 +33,8 @@ window.global = {
 };
 
 window.debug = {
-  DRAW_HITBOX: false
+  DRAW_HITBOX: false,
+  DRAW_INFO: false
 };
 
 const backgroundLayer1 = new Image();
@@ -71,11 +72,19 @@ class Game {
     this.music = new Audio();
     this.music.src = 'assets/music/random_silly_chip_song.ogg';
 
+    this.ctx.font = 'italic bold 30px Arial';
+
     this.enemies = [];
     this.backgrounds = [];
-    this.player = new Player(this, 150, 310, this.inputHandler);
-    this.#addNewEnemy();
     this.#addBackground();
+    this.playerStartX = 150;
+    this.playerStartY = 482;
+    this.player = new Player(
+      this,
+      this.playerStartX,
+      this.playerStartY,
+      this.inputHandler
+    );
 
     this.gameFrame = 0;
     this.levelSpeed = 0;
@@ -83,7 +92,7 @@ class Game {
     this.ground = this.canvasHeight - 18;
     this.musicVolume = 1;
 
-    this.levelState = 'start';
+    this.startTime = 3000;
     this.startLevel();
   }
   update(deltaTime) {
@@ -93,7 +102,6 @@ class Game {
     [...this.backgrounds, this.player, ...this.enemies].forEach((object) =>
       object.update(deltaTime)
     );
-    if (this.levelState === 'start') this.drawStartLevel();
   }
 
   draw(deltaTime) {
@@ -102,6 +110,14 @@ class Game {
     [...this.backgrounds, this.player, ...this.enemies].forEach((object) =>
       object.draw(this.ctx, deltaTime)
     );
+    if (this.levelState === 'start') this.drawStartLevel();
+    else this.displayStatusText();
+
+    if (window.debug.DRAW_INFO) {
+      this.ctx.textAlign = 'left';
+      this.ctx.fillStyle = 'black';
+      this.ctx.fillText(`Level State: ${this.levelState}`, 50, 100);
+    }
   }
 
   #addNewEnemy() {
@@ -143,25 +159,37 @@ class Game {
   }
 
   startLevel() {
-    this.music.loop = true;
-    this.music.volume = this.musicVolume;
-    this.music.play();
+    this.levelState = 'start';
+    this.levelSpeed = 0;
+    this.enemies = [];
+
+    setTimeout(() => {
+      this.levelState = 'run';
+      this.levelSpeed = 5;
+      this.player.state = 'run';
+      this.player.animationSpeed = 20;
+      this.#addNewEnemy();
+
+      this.music.loop = true;
+      this.music.volume = this.musicVolume;
+      this.music.play();
+    }, this.startTime);
   }
 
   drawStartLevel() {
     this.ctx.textAlign = 'center';
     this.ctx.fillStyle = 'black';
-    this.ctx.fillText('Start!', canvas.width / 2 - 2, canvas.height / 2 - 2);
-    this.ctx.fillStyle = 'white';
+    this.ctx.fillText('Start!', canvas.width / 2 + 2, canvas.height / 2 + 2);
+    this.ctx.fillStyle = 'green';
     this.ctx.fillText('Start!', canvas.width / 2, canvas.height / 2);
   }
 
   displayStatusText() {
-    this.ctx.textAlign = 'center';
+    this.ctx.textAlign = 'left';
     this.ctx.fillStyle = 'black';
-    this.ctx.fillText('Score: ', 50, 50);
-    this.ctx.fillStyle = 'white';
-    this.ctx.fillText('Score: ', 50, 50);
+    this.ctx.fillText(`Health: ${this.player.health}`, 52, 52);
+    this.ctx.fillStyle = 'lightblue';
+    this.ctx.fillText(`Health: ${this.player.health}`, 50, 50);
   }
 
   muteMusic() {

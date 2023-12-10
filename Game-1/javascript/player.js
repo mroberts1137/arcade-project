@@ -22,6 +22,15 @@ export default class Player extends Entity {
     this.maxVx = 0.4;
     this.maxVy = 1;
     this.gravity = 0.04;
+    this.startHealth = 5;
+    this.health = this.startHealth;
+
+    this.hit = false;
+    this.hitTime = 250;
+    this.invulnerable = false;
+    this.invulnerableTime = 1200;
+    this.dead = false;
+    this.deadTime = 5000;
 
     // coordinates/hitbox
     this.updateHitbox(
@@ -54,6 +63,10 @@ export default class Player extends Entity {
       {
         name: 'getHit',
         frames: 11
+      },
+      {
+        name: 'dead',
+        frames: 20
       }
     ];
     this.getSpriteAnimations();
@@ -62,71 +75,113 @@ export default class Player extends Entity {
   update(deltaTime) {
     super.update(deltaTime);
 
+    if (this.hit && this.hitbox.left > 0) {
+      this.x -= this.game.levelSpeed;
+    }
+
+    if (
+      !this.placeFree(this.hitbox.left, this.hitbox.bottom) &&
+      !this.hit &&
+      !this.dead &&
+      this.game.levelState === 'run'
+    ) {
+      this.state = 'run';
+      this.animationSpeed = 20;
+    }
+
     // handle collisions by collisionId
     switch (this.collisionId) {
       case 0:
         break;
       case 1:
-        this.state = 'getHit';
-        this.sfx_hit.play();
+        // collide with enemy
+        if (
+          !this.invulnerable &&
+          this.game.levelState === 'run' &&
+          !this.dead
+        ) {
+          this.hit = true;
+          this.invulnerable = true;
+          this.state = 'getHit';
+          this.animationFrame = 0;
+          this.animationSpeed = 20;
+          this.sfx_hit.play();
+          this.health -= 1;
+          if (this.health <= 0) {
+            this.die();
+          }
+          setTimeout(() => {
+            this.hit = false;
+          }, this.hitTime);
+          setTimeout(() => {
+            this.invulnerable = false;
+          }, this.invulnerableTime);
+        }
         break;
     }
   }
 
   move(deltaTime) {
-    if (this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
-      this.ay = this.gravity;
-      this.animationSpeed = 40;
-      if (this.vy < 0) this.state = 'jump';
-      else if (this.vy > 0) this.state = 'fall';
-    } else {
-      if (this.vy > 0) {
-        this.y = this.game.ground - this.hitbox.yOffset - this.hitbox.height;
-        this.vy = 0;
-        this.ay = 0;
-      }
-    }
-
-    if (this.input.keys.includes('ArrowRight')) {
-      if (this.hitbox.right + this.maxVx * deltaTime < this.game.canvasWidth) {
-        if (!this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
-          this.state = 'run';
-          this.animationSpeed = 20;
-        }
-        if (this.hitbox.right < this.game.canvasWidth / 2) {
-          this.x += this.maxVx * deltaTime;
-        } else {
-          this.game.levelSpeed = this.maxVx * deltaTime;
-        }
-      }
-    } else if (this.input.keys.includes('ArrowLeft')) {
-      if (this.hitbox.left - this.maxVx * deltaTime > 0) {
-        if (!this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
-          this.state = 'run';
-          this.animationSpeed = 20;
-        }
-        this.x -= this.maxVx * deltaTime;
-        this.game.levelSpeed = 0;
-      }
-    } else {
-      if (!this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
-        this.state = 'idle';
-        this.animationSpeed = 40;
-        this.game.levelSpeed = 0;
-      }
-    }
-    if (
-      this.input.keys.includes('Space') ||
-      this.input.keys.includes('ArrowUp')
-    ) {
-      if (this.hitbox.bottom >= this.game.canvasHeight - 18) {
-        this.vy = -this.maxVy;
+    if (!this.dead && this.game.levelState === 'run') {
+      if (this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
+        // freefall
         this.ay = this.gravity;
-        this.sfx_jump.play();
+        this.animationSpeed = 40;
+        if (this.vy < 0 && !this.hit) this.state = 'jump';
+        else if (this.vy > 0 && !this.hit) this.state = 'fall';
+      } else {
+        if (this.vy > 0) {
+          // land on ground
+          this.y = this.game.ground - this.hitbox.yOffset - this.hitbox.height;
+          this.vy = 0;
+          this.ay = 0;
+          this.state = 'run';
+          this.animationSpeed = 20;
+        }
       }
-      console.log(this.spriteAnimations);
-    }
 
-    super.move(deltaTime);
+      // handle keyboard input
+      if (!this.hit && !this.dead) {
+        if (this.input.keys.includes('ArrowRight')) {
+          // run right
+          if (this.hitbox.right < this.game.canvasWidth) {
+            this.x += this.maxVx * deltaTime;
+          }
+        } else if (this.input.keys.includes('ArrowLeft')) {
+          // run left
+          if (this.hitbox.left > 0) {
+            this.x -= this.maxVx * deltaTime;
+          }
+        }
+        if (
+          this.input.keys.includes('Space') ||
+          this.input.keys.includes('ArrowUp')
+        ) {
+          if (this.hitbox.bottom >= this.game.canvasHeight - 18) {
+            // jump
+            this.vy = -this.maxVy;
+            this.ay = this.gravity;
+            this.sfx_jump.play();
+          }
+        }
+      }
+
+      super.move(deltaTime);
+    }
+  }
+
+  die() {
+    this.state = 'dead';
+    this.dead = true;
+    this.game.music.pause();
+    setTimeout(() => {
+      this.state = 'idle';
+      this.animationSpeed = 40;
+      this.x = this.game.playerStartX;
+      this.y = this.game.playerStartY;
+      this.health = this.startHealth;
+      this.dead = false;
+      this.game.startLevel();
+    }, this.deadTime);
   }
 }
