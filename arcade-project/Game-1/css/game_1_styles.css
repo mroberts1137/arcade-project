@@ -1,0 +1,102 @@
+#canvas1 {
+  border: solid black 5px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.container {
+  position: absolute;
+  width: 75%;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+body {
+  background: #22182f;
+}
+
+/* animations */
+
+@keyframes disappear {
+  50% {
+    color: black;
+  }
+}
+
+@-webkit-keyframes disappear {
+  50% {
+    color: black;
+  }
+}
+
+@keyframes boxshade {
+  50% {
+    box-shadow: 0 0 50px #48b2de;
+  }
+}
+
+@-webkit-keyframes boxshade {
+  50% {
+    box-shadow: 0 0 50px white;
+  }
+}
+
+/* header and wrapper */
+
+header {
+  animation: disappear 5s infinite;
+  width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 50px;
+  font-family: 'Coda', cursive;
+  font-size: 100px;
+  color: #0bcaff;
+  text-shadow: 0 0 20px white;
+}
+
+.wrapper {
+  width: 1100px;
+  height: 950px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 40px;
+  box-shadow: 0 0 20px white;
+  animation: boxshade 5s infinite;
+}
+
+/* boxes */
+
+.box {
+  width: 200px;
+  height: 300px;
+  margin-left: 400px;
+  margin-top: 50px;
+  padding: 50px;
+  position: absolute;
+  background: #0bcaff;
+  border-radius: 40px;
+  box-shadow: 0 0 20px lightblue;
+  color: white;
+}
+
+.wrapper .box:hover {
+  background-color: lightblue;
+  color: black;
+  cursor: pointer;
+}
+
+p {
+  text-align: center;
+  font-family: 'Coda', cursive;
+  font-size: 50px;
+  margin-top: 40px;
+}
+
+.line-through {
+  text-decoration: line-through;
+}

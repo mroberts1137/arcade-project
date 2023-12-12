@@ -1,0 +1,198 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #22182f;
+}
+
+/* animations */
+
+@keyframes disappear {
+  50% {
+    color: black;
+  }
+}
+
+@-webkit-keyframes disappear {
+  50% {
+    color: black;
+  }
+}
+
+@keyframes boxshade {
+  50% {
+    box-shadow: 0 0 50px #48b2de;
+  }
+}
+
+@-webkit-keyframes boxshade {
+  50% {
+    box-shadow: 0 0 50px white;
+  }
+}
+
+/* header and wrapper */
+
+header {
+  animation: disappear 5s infinite;
+  width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 50px;
+  font-family: 'Coda', cursive;
+  font-size: 100px;
+  color: #0bcaff;
+  text-shadow: 0 0 20px white;
+}
+
+.wrapper {
+  width: 1100px;
+  height: 950px;
+  margin: 0 auto;
+  position: relative;
+  border-radius: 40px;
+  box-shadow: 0 0 20px white;
+  animation: boxshade 5s infinite;
+}
+
+/* boxes */
+
+.box {
+  width: 200px;
+  height: 300px;
+  margin-left: 400px;
+  margin-top: 50px;
+  padding: 50px;
+  position: absolute;
+  background: #0bcaff;
+  border-radius: 40px;
+  box-shadow: 0 0 20px lightblue;
+  color: white;
+}
+
+.wrapper .box:hover {
+  background-color: lightblue;
+  color: black;
+  cursor: pointer;
+}
+
+p {
+  text-align: center;
+  font-family: 'Coda', cursive;
+  font-size: 50px;
+  margin-top: 40px;
+}
+
+.game-icon {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Instructions Modal */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+.instructionsModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #222;
+  position: relative;
+  min-height: 100vh;
+  background-color: #b3e6f4;
+}
+.modal {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 450px;
+  padding: 1.3rem;
+  min-height: 250px;
+  position: absolute;
+  z-index: 2;
+  top: 20%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+}
+
+.modal .flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal input {
+  padding: 0.7rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.9em;
+}
+
+.modal p {
+  font-size: 0.9rem;
+  color: #777;
+  margin: 0.4rem 0 0.2rem;
+}
+
+.modal ul {
+  font-size: 0.9rem;
+  color: #777;
+  margin-left: 1rem
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.8rem 1.4rem;
+  font-weight: 700;
+  background-color: #E76069;
+  color: white;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 1em;
+}
+
+.btn-open {
+  position: absolute;
+  bottom: 150px;
+}
+
+.btn-close {
+  transform: translate(10px, -20px);
+  padding: 0.5rem 0.7rem;
+  background: #eee;
+  border-radius: 50%;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 1;
+}
+
+.hidden {
+  display: none;
+}
