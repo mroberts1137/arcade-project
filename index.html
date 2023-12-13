@@ -8,10 +8,7 @@
       href="https://fonts.googleapis.com/css?family=Coda"
       rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
-    />
+
 
     <link rel="stylesheet" href="css/styles.css" />
     <title>Javascript Portfolio Project</title>
@@ -31,6 +28,31 @@
         </div>
       </a>
     </div>
+
+    <!-- Instructions Modal -->
+<section class="modal hidden" id="instructionsModal">
+  <div class="flex">
+     <img src="assets/game-1-icon.png" width="50px" height="50px" alt="user" />
+    <button class="btn-close">⨉</button>
+  </div>
+  <div>
+    <h3>How to play:</h3>
+    <p>Use your keyboard to move!
+      <ul>
+        <li>Left Arrow Key - </li>
+        <li> Right Arrow Key - </li>
+        <li>Other directions</li>
+    </ul>
+    </p>
+  </div>
+
+<button class="btn">Player ready?</button>
+</section>
+
+<div class="overlay hidden"></div>
+<button class="btn btn-open">Game Instructions</button>
+
+<!-- Instructions Modal End-->
 
     <script src="javascript/main.js"></script>
   </body>
