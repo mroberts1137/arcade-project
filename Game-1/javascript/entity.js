@@ -46,6 +46,7 @@ export default class Entity {
     this.animationTick = 0;
     this.animationSpeed = 50;
     this.animationFrame = 0;
+    this.animationLoop = true;
     this.spriteAnimations = []; // spriteSheet[animation] = { frame x, frame y }
     this.animationStates = []; // { animation state, frames }
   }
@@ -84,7 +85,10 @@ export default class Entity {
         if (topOOB) this.y = this.game.canvasHeight;
         break;
       case 'delete':
-        if (leftOOB || rightOOB || topOOB || bottomOOB) {
+        // if (leftOOB || rightOOB || topOOB || bottomOOB) {
+        //   this.markedForDeletion = true;
+        // }
+        if (leftOOB) {
           this.markedForDeletion = true;
         }
         break;
@@ -159,14 +163,27 @@ export default class Entity {
     this.height = Math.floor(spriteHeight * spriteScale);
     this.hitbox.width = Math.floor(this.width * scale);
     this.hitbox.height = Math.floor(this.height * scale);
-    this.hitbox.xOffset = Math.floor((1 - scale) * this.width * 0.5);
-    this.hitbox.yOffset = Math.floor(this.height - this.hitbox.height);
+    this.hitbox.xOffset = Math.floor((1 - scale) * this.width * 0.5 + xOffset);
+    this.hitbox.yOffset = Math.floor(
+      this.height - this.hitbox.height + yOffset
+    );
     this.hitbox.x = this.x + this.hitbox.xOffset;
     this.hitbox.y = this.y + this.hitbox.yOffset;
     this.hitbox.left = this.x + this.hitbox.xOffset;
     this.hitbox.right = this.x + this.hitbox.xOffset + this.hitbox.width;
     this.hitbox.top = this.y + this.hitbox.yOffset;
     this.hitbox.bottom = this.y + this.hitbox.yOffset + this.hitbox.height;
+  }
+
+  bouncedOn() {
+    this.markedForDeletion = true;
+    this.game.createExplosion(
+      this.x + this.width / 2,
+      this.y + this.height / 2
+    );
+    this.game.score += 12;
+    if (this.game.score > this.game.highScore)
+      this.game.highScore = this.game.score;
   }
 
   ////////////////////////////////////////////////////////////
@@ -200,10 +217,16 @@ export default class Entity {
     this.animationTick += deltaTime;
     try {
       let sprite = this.spriteAnimations[this.state].loc;
+
       if (this.animationTick > this.animationSpeed) {
         this.animationTick = 0;
-        this.animationFrame = (this.animationFrame + 1) % sprite.length;
+        if (
+          this.animationLoop ||
+          (!this.animationLoop && this.animationFrame < sprite.length - 1)
+        )
+          this.animationFrame = (this.animationFrame + 1) % sprite.length;
       }
+
       // in case sprite states have changed mid-animation and have different frame counts
       this.animationFrame = this.animationFrame % sprite.length;
       return {

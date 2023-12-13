@@ -1,17 +1,10 @@
 /** @type {HTMLCanvasElement} */
 
-import {
-  Bat,
-  Bug,
-  Bee,
-  Wheel,
-  Worm,
-  Ghost2,
-  Spider,
-  Crawler
-} from './enemy.js';
+import { Bug, Bee, Crawler, Ghost } from './enemy.js';
 import Player from './player.js';
 import Layer from './background.js';
+import Explosion from './explosion.js';
+import Star from './star.js';
 
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
@@ -37,219 +30,445 @@ window.debug = {
   DRAW_INFO: false
 };
 
-const backgroundLayer1 = new Image();
-backgroundLayer1.src = 'assets/backgrounds/layer-1.png';
-const backgroundLayer2 = new Image();
-backgroundLayer2.src = 'assets/backgrounds/layer-2.png';
-const backgroundLayer3 = new Image();
-backgroundLayer3.src = 'assets/backgrounds/layer-3.png';
-const backgroundLayer4 = new Image();
-backgroundLayer4.src = 'assets/backgrounds/layer-4.png';
-const backgroundLayer5 = new Image();
-backgroundLayer5.src = 'assets/backgrounds/layer-5.png';
+// wait until all assets are fully loaded before starting the game
+window.addEventListener('load', () => {
+  const backgroundLayer1 = new Image();
+  backgroundLayer1.src = 'assets/backgrounds/layer-1.png';
+  const backgroundLayer2 = new Image();
+  backgroundLayer2.src = 'assets/backgrounds/layer-2.png';
+  const backgroundLayer3 = new Image();
+  backgroundLayer3.src = 'assets/backgrounds/layer-3.png';
+  const backgroundLayer4 = new Image();
+  backgroundLayer4.src = 'assets/backgrounds/layer-4.png';
+  const backgroundGround = new Image();
+  backgroundGround.src = 'assets/backgrounds/ground.png';
 
-/////////////////////////////////////////////////////////////////
-// GAME CLASS
-/////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
+  // GAME CLASS
+  /////////////////////////////////////////////////////////////////
 
-class Game {
-  constructor(ctx, canvasWidth, canvasHeight) {
-    this.ctx = ctx;
-    this.canvasWidth = canvasWidth;
-    this.canvasHeight = canvasHeight;
+  class Game {
+    constructor(ctx, canvasWidth, canvasHeight) {
+      this.ctx = ctx;
+      this.canvasWidth = canvasWidth;
+      this.canvasHeight = canvasHeight;
 
-    this.pauseButton = document.querySelector('#pauseButton');
-    this.pauseButton.addEventListener('click', () => {
-      this.pauseGame();
-    });
-    this.muteButton = document.querySelector('#muteMusic');
-    this.muteButton.addEventListener('click', () => {
-      this.muteMusic();
-    });
+      this.pauseButton = document.querySelector('#pauseButton');
+      this.pauseButton.addEventListener('click', () => {
+        this.pauseGame();
+      });
+      this.muteButton = document.querySelector('#muteMusic');
+      this.muteButton.addEventListener('click', () => {
+        this.muteMusic();
+      });
+      this.volumeSlider = document.querySelector('#musicVolume');
+      this.volumeSlider.addEventListener('input', (e) => {
+        this.setVolume(e.target.value / 100);
+      });
 
-    this.inputHandler = new InputHandler();
+      this.inputHandler = new InputHandler();
 
-    this.music = new Audio();
-    this.music.src = 'assets/music/random_silly_chip_song.ogg';
+      this.music = new Audio();
+      this.music.src = 'assets/music/random_silly_chip_song.ogg';
 
-    this.ctx.font = 'italic bold 30px Arial';
+      this.heartFull = new Image();
+      this.heartFull.src = 'assets/sprites/heart-full.png';
+      this.heartEmpty = new Image();
+      this.heartEmpty.src = 'assets/sprites/heart-empty.png';
+      this.heartWidth = 40;
 
-    this.enemies = [];
-    this.backgrounds = [];
-    this.#addBackground();
-    this.playerStartX = 150;
-    this.playerStartY = 482;
-    this.player = new Player(
-      this,
-      this.playerStartX,
-      this.playerStartY,
-      this.inputHandler
-    );
+      this.ctx.font = 'italic bold 30px Arial';
 
-    this.gameFrame = 0;
-    this.levelSpeed = 0;
-    this.gamePause = false;
-    this.ground = this.canvasHeight - 18;
-    this.musicVolume = 1;
+      this.enemies = [];
+      this.backgrounds = [];
+      this.explosions = [];
+      this.stars = [];
+      this.#addBackground();
+      this.playerStartX = 150;
+      this.playerStartY = 400;
+      this.player = new Player(
+        this,
+        this.playerStartX,
+        this.playerStartY,
+        this.inputHandler
+      );
 
-    this.startTime = 3000;
-    this.startLevel();
-  }
-  update(deltaTime) {
-    // delete enemies marked for deletion
-    this.enemies = this.enemies.filter((obj) => !obj.markedForDeletion);
+      this.gameFrame = 0;
+      this.levelSpeed = 0;
+      this.startSpeed = 3;
+      this.gamePause = false;
+      this.ground = this.canvasHeight - 100;
+      this.musicVolume = 1;
+      this.score = 0;
+      this.highScore = 0;
 
-    [...this.backgrounds, this.player, ...this.enemies].forEach((object) =>
-      object.update(deltaTime)
-    );
-  }
+      this.startTime = 3000;
+      this.startLevel();
 
-  draw(deltaTime) {
-    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-
-    [...this.backgrounds, this.player, ...this.enemies].forEach((object) =>
-      object.draw(this.ctx, deltaTime)
-    );
-    if (this.levelState === 'start') this.drawStartLevel();
-    else this.displayStatusText();
-
-    if (window.debug.DRAW_INFO) {
-      this.ctx.textAlign = 'left';
-      this.ctx.fillStyle = 'black';
-      this.ctx.fillText(`Level State: ${this.levelState}`, 50, 100);
+      this.spawnEnemyTimer = 4000;
+      this.spawnEnemyTick = 0;
+      this.spawnStarTimer = 3000;
+      this.spawnStarTick = 0;
+      this.speedUpTimer = 10000;
+      this.speedUpTick = 10000;
     }
-  }
+    update(deltaTime) {
+      this.gameFrame++;
+      this.spawnEnemyTick -= deltaTime;
+      this.spawnStarTick -= deltaTime;
+      this.speedUpTick -= deltaTime;
+      if (this.spawnEnemyTick < 0) {
+        this.spawnEnemyTick = this.spawnEnemyTimer;
+        if (this.spawnEnemyTimer > 1000) this.spawnEnemyTimer -= 100;
+        this.#addNewEnemy();
+      }
+      if (this.spawnStarTick < 0) {
+        this.spawnStarTick = this.spawnStarTimer;
+        if (this.spawnStarTimer > 1000) this.spawnStarTimer -= 100;
+        this.createStar();
+      }
+      if (this.speedUpTick < 0) {
+        this.speedUpTick = this.speedUpTimer;
+        if (
+          this.levelSpeed < 20 &&
+          !this.gamePaused &&
+          this.levelState === 'run' &&
+          this.player.state !== 'dead'
+        )
+          this.levelSpeed += 1;
+      }
 
-  #addNewEnemy() {
-    // this.enemies.push(new Bat(this, 200, 100));
-    this.enemies.push(
-      new Bug(this, this.canvasWidth - 100, Math.random() * this.canvasHeight)
-    );
-    this.enemies.push(
-      new Bee(this, this.canvasWidth - 100, Math.random() * this.canvasHeight)
-    );
-    // this.enemies.push(new Ghost(this, 200, 100));
-    // this.enemies.push(new Wheel(this, 200, 100));
-    // this.enemies.push(new Worm(this, 200, 500));
-    // this.enemies.push(new Ghost2(this, 200, 400));
-    // this.enemies.push(new Spider(this, 200, 0));
-    // this.enemies.push(new Spider(this, 400, 0));
-    // this.enemies.push(new Spider(this, 500, 0));
-    this.enemies.push(new Crawler(this, 20, 500));
-  }
+      // delete enemies marked for deletion
+      this.enemies = this.enemies.filter((obj) => !obj.markedForDeletion);
+      this.explosions = this.explosions.filter((obj) => !obj.markedForDeletion);
+      this.stars = this.stars.filter((obj) => !obj.markedForDeletion);
 
-  #addBackground() {
-    this.backgrounds.push(new Layer(this, backgroundLayer1, 0.2));
-    this.backgrounds.push(new Layer(this, backgroundLayer2, 0.4));
-    this.backgrounds.push(new Layer(this, backgroundLayer3, 0.6));
-    this.backgrounds.push(new Layer(this, backgroundLayer4, 0.8));
-    this.backgrounds.push(new Layer(this, backgroundLayer5, 1));
-  }
-
-  pauseGame() {
-    if (!this.gamePaused) {
-      this.gamePaused = true;
-      this.pauseButton.innerText = 'Play';
-      this.music.pause();
-    } else {
-      this.gamePaused = false;
-      this.pauseButton.innerText = 'Pause';
-      this.music.play();
+      [
+        ...this.backgrounds,
+        this.player,
+        ...this.enemies,
+        ...this.stars,
+        ...this.explosions
+      ].forEach((object) => object.update(deltaTime));
     }
-  }
 
-  startLevel() {
-    this.levelState = 'start';
-    this.levelSpeed = 0;
-    this.enemies = [];
+    draw(deltaTime) {
+      this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-    setTimeout(() => {
-      this.levelState = 'run';
-      this.levelSpeed = 5;
-      this.player.state = 'run';
-      this.player.animationSpeed = 20;
-      this.#addNewEnemy();
+      [
+        ...this.backgrounds,
+        this.player,
+        ...this.enemies,
+        ...this.stars,
+        ...this.explosions
+      ].forEach((object) => object.draw(this.ctx, deltaTime));
 
-      this.music.loop = true;
-      this.music.volume = this.musicVolume;
-      this.music.play();
-    }, this.startTime);
-  }
+      if (this.levelState === 'start') this.drawStartLevel();
+      else this.displayStatusText();
 
-  drawStartLevel() {
-    this.ctx.textAlign = 'center';
-    this.ctx.fillStyle = 'black';
-    this.ctx.fillText('Start!', canvas.width / 2 + 2, canvas.height / 2 + 2);
-    this.ctx.fillStyle = 'green';
-    this.ctx.fillText('Start!', canvas.width / 2, canvas.height / 2);
-  }
-
-  displayStatusText() {
-    this.ctx.textAlign = 'left';
-    this.ctx.fillStyle = 'black';
-    this.ctx.fillText(`Health: ${this.player.health}`, 52, 52);
-    this.ctx.fillStyle = 'lightblue';
-    this.ctx.fillText(`Health: ${this.player.health}`, 50, 50);
-  }
-
-  muteMusic() {
-    if (this.music.volume > 0) {
-      this.music.volume = 0;
-      this.muteButton.classList.add('line-through');
-    } else {
-      this.music.volume = 1;
-      this.muteButton.classList.remove('line-through');
+      if (window.debug.DRAW_INFO) {
+        this.ctx.textAlign = 'left';
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillText(`Level State: ${this.levelSpeed}`, 50, 100);
+      }
     }
-  }
-}
 
-/////////////////////////////////////////////////////////////////
-// InputHandler Class
-/////////////////////////////////////////////////////////////////
-
-class InputHandler {
-  constructor() {
-    this.keys = [];
-    window.addEventListener('keydown', (e) => {
+    #addNewEnemy() {
       if (
-        (e.code === 'ArrowLeft' ||
+        !this.gamePaused &&
+        this.levelState === 'run' &&
+        this.player.state !== 'dead'
+      ) {
+        const enemyList = ['bug', 'crawler', 'bee', 'ghost'];
+        const selection =
+          enemyList[Math.floor(Math.random() * enemyList.length)];
+
+        switch (selection) {
+          case 'bug':
+            this.enemies.push(
+              new Bug(
+                this,
+                this.canvasWidth,
+                Math.random() * (this.canvasHeight * 0.25) +
+                  this.canvasHeight * 0.35
+              )
+            );
+            break;
+          case 'crawler':
+            this.enemies.push(new Crawler(this, this.canvasWidth, this.ground));
+            break;
+          case 'bee':
+            this.enemies.push(
+              new Bee(
+                this,
+                this.canvasWidth,
+                Math.random() * (this.canvasHeight * 0.25) +
+                  this.canvasHeight * 0.15
+              )
+            );
+            break;
+          case 'ghost':
+            this.enemies.push(
+              new Ghost(this, this.canvasWidth, this.canvasHeight * 0.5)
+            );
+            break;
+        }
+      }
+    }
+
+    #addBackground() {
+      this.backgrounds.push(
+        new Layer(
+          this,
+          backgroundLayer1,
+          0.2,
+          0,
+          0,
+          this.canvasWidth,
+          this.canvasHeight - 100
+        )
+      );
+      this.backgrounds.push(
+        new Layer(
+          this,
+          backgroundLayer2,
+          0.4,
+          0,
+          0,
+          this.canvasWidth,
+          this.canvasHeight - 100
+        )
+      );
+      this.backgrounds.push(
+        new Layer(
+          this,
+          backgroundLayer3,
+          0.6,
+          0,
+          0,
+          this.canvasWidth,
+          this.canvasHeight - 100
+        )
+      );
+      this.backgrounds.push(
+        new Layer(
+          this,
+          backgroundLayer4,
+          0.8,
+          0,
+          0,
+          this.canvasWidth,
+          this.canvasHeight - 100
+        )
+      );
+      this.backgrounds.push(
+        new Layer(
+          this,
+          backgroundGround,
+          1,
+          0,
+          this.canvasHeight - 100,
+          this.canvasWidth,
+          100
+        )
+      );
+    }
+
+    createExplosion(x, y) {
+      this.explosions.push(new Explosion(this, x, y));
+    }
+
+    createStar(x, y) {
+      if (
+        !this.gamePaused &&
+        this.levelState === 'run' &&
+        this.player.state !== 'dead'
+      ) {
+        this.stars.push(
+          new Star(
+            this,
+            this.canvasWidth,
+            Math.random() * (this.canvasHeight * 0.3) + this.canvasHeight * 0.4
+          )
+        );
+      }
+    }
+
+    checkPlayerCollisions() {
+      this.player.collisionId = 0;
+      this.enemies.forEach((enemy) => {
+        if (this.player.checkCollision(enemy.hitbox)) {
+          this.player.collisionId = 1;
+          this.player.checkBounceOnEnemy(enemy);
+        }
+      });
+      this.stars.forEach((star) => {
+        if (this.player.checkCollision(star.hitbox)) {
+          this.player.collisionId = 2;
+          star.collect();
+          this.score += 10;
+          if (this.score > this.highScore) this.highScore = this.score;
+        }
+      });
+    }
+
+    pauseGame() {
+      if (!this.gamePaused) {
+        this.gamePaused = true;
+        this.pauseButton.innerText = 'Play';
+        this.music.pause();
+      } else {
+        this.gamePaused = false;
+        this.pauseButton.innerText = 'Pause';
+        this.music.play();
+      }
+    }
+
+    startLevel() {
+      this.levelState = 'start';
+      this.levelSpeed = 0;
+      this.enemies = [];
+      this.explosions = [];
+      this.stars = [];
+      this.spawnEnemyTimer = 4000;
+      this.spawnEnemyTick = 0;
+      this.spawnStarTimer = 3000;
+      this.spawnStarTick = 0;
+      this.speedUpTimer = 10000;
+      this.speedUpTick = 10000;
+      if (this.score > this.highScore) this.highScore = this.score;
+      this.score = 0;
+
+      setTimeout(() => {
+        this.levelState = 'run';
+        this.levelSpeed = this.startSpeed;
+        this.player.state = 'run';
+        this.player.animationSpeed =
+          this.player.spriteProps[this.player.state].speed;
+
+        this.music.loop = true;
+        this.music.volume = this.musicVolume;
+        this.music.play();
+      }, this.startTime);
+    }
+
+    drawStartLevel() {
+      this.ctx.font = 'italic bold 45px Arial';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillStyle = 'black';
+      this.ctx.fillText('Start!', canvas.width / 2 + 2, canvas.height / 2 + 2);
+      this.ctx.fillStyle = '#CC0044';
+      this.ctx.fillText('Start!', canvas.width / 2, canvas.height / 2);
+    }
+
+    displayStatusText() {
+      // player health
+      for (let i = 1; i <= this.player.startHealth; i++) {
+        if (this.player.health >= i)
+          this.ctx.drawImage(
+            this.heartFull,
+            25 + (i - 1) * this.heartWidth,
+            25,
+            this.heartWidth,
+            this.heartWidth
+          );
+        else
+          this.ctx.drawImage(
+            this.heartEmpty,
+            25 + (i - 1) * this.heartWidth,
+            25,
+            this.heartWidth,
+            this.heartWidth
+          );
+      }
+
+      this.ctx.font = 'italic bold 30px Arial';
+      // score
+      this.ctx.textAlign = 'right';
+      this.ctx.fillStyle = 'black';
+      this.ctx.fillText(`Score: ${this.score}`, this.canvasWidth - 52, 52);
+      this.ctx.fillStyle = '#004477';
+      this.ctx.fillText(`Score: ${this.score}`, this.canvasWidth - 50, 50);
+
+      // high score
+      this.ctx.textAlign = 'center';
+      this.ctx.fillStyle = 'black';
+      this.ctx.fillText(
+        `High Score: ${this.highScore}`,
+        this.canvasWidth * 0.5,
+        52
+      );
+      this.ctx.fillStyle = '#222277';
+      this.ctx.fillText(
+        `High Score: ${this.highScore}`,
+        this.canvasWidth * 0.5,
+        50
+      );
+    }
+
+    muteMusic() {
+      if (this.music.volume > 0) {
+        this.music.volume = 0;
+        this.muteButton.classList.add('line-through');
+      } else {
+        this.music.volume = 1;
+        this.muteButton.classList.remove('line-through');
+      }
+    }
+
+    setVolume(volume) {
+      this.musicVolume = volume;
+      this.music.volume = volume;
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////
+  // InputHandler Class
+  /////////////////////////////////////////////////////////////////
+
+  class InputHandler {
+    constructor() {
+      this.keys = [];
+      window.addEventListener('keydown', (e) => {
+        e.stopPropagation;
+        if (
+          (e.code === 'ArrowLeft' ||
+            e.code === 'ArrowRight' ||
+            e.code === 'ArrowUp' ||
+            e.code === 'ArrowDown' ||
+            e.code === 'Space') &&
+          !this.keys.includes(e.code)
+        ) {
+          this.keys.push(e.code);
+        }
+      });
+      window.addEventListener('keyup', (e) => {
+        if (
+          e.code === 'ArrowLeft' ||
           e.code === 'ArrowRight' ||
           e.code === 'ArrowUp' ||
           e.code === 'ArrowDown' ||
-          e.code === 'Space') &&
-        !this.keys.includes(e.code)
-      ) {
-        this.keys.push(e.code);
-      }
-    });
-    window.addEventListener('keyup', (e) => {
-      if (
-        e.code === 'ArrowLeft' ||
-        e.code === 'ArrowRight' ||
-        e.code === 'ArrowUp' ||
-        e.code === 'ArrowDown' ||
-        e.code === 'Space'
-      ) {
-        const idx = this.keys.indexOf(e.code);
-        this.keys.splice(idx, 1);
-      }
-    });
+          e.code === 'Space'
+        ) {
+          const idx = this.keys.indexOf(e.code);
+          this.keys.splice(idx, 1);
+        }
+      });
+    }
   }
-}
 
-/////////////////////////////////////////////////////////////////
-// GLOBAL FUNCTIONS
-/////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
+  // GLOBAL FUNCTIONS
+  /////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////
-// GAME INITIALIZE
-/////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
+  // GAME INITIALIZE
+  /////////////////////////////////////////////////////////////////
 
-const game = new Game(ctx, canvas.width, canvas.height);
+  const game = new Game(ctx, canvas.width, canvas.height);
 
-// wait until all assets are fully loaded before starting the game
-window.addEventListener('load', () => {
   let prevTime = 0;
+
   function animate(timestamp) {
     if (!game.gamePaused) {
       let deltaTime = timestamp - prevTime;
@@ -259,13 +478,8 @@ window.addEventListener('load', () => {
       game.update(deltaTime);
       game.draw(deltaTime);
 
-      game.player.collisionId = 0;
-      game.enemies.forEach((enemy) => {
-        if (game.player.checkCollision(enemy.hitbox))
-          game.player.collisionId = 1;
-      });
-
-      game.gameFrame++;
+      // check for enemy collisions with player
+      game.checkPlayerCollisions();
     }
     requestAnimationFrame(animate);
   }

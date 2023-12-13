@@ -4,7 +4,7 @@ export default class Player extends Entity {
   constructor(game, x, y, input) {
     super(game, x, y);
     // sprite info
-    this.image.src = 'assets/sprites/robot_boy.png';
+    this.image.src = 'assets/sprites/robot-boy.png';
     this.spriteWidth = 300;
     this.spriteHeight = 200;
     this.spriteScale = 0.5;
@@ -37,7 +37,7 @@ export default class Player extends Entity {
       this.spriteWidth,
       this.spriteHeight,
       this.spriteScale,
-      0.65,
+      0.6,
       0,
       0
     );
@@ -46,29 +46,55 @@ export default class Player extends Entity {
     this.animationStates = [
       {
         name: 'idle',
-        frames: 20
+        frames: 20,
+        speed: 40
       },
       {
         name: 'jump',
-        frames: 10
+        frames: 10,
+        speed: 40
       },
       {
         name: 'fall',
-        frames: 10
+        frames: 10,
+        speed: 40
       },
       {
         name: 'run',
-        frames: 12
+        frames: 12,
+        speed: 20
       },
       {
         name: 'getHit',
-        frames: 11
+        frames: 11,
+        speed: 20
       },
       {
         name: 'dead',
-        frames: 20
+        frames: 20,
+        speed: 60
       }
     ];
+    this.spriteProps = {
+      idle: {
+        speed: 40
+      },
+      jump: {
+        speed: 40
+      },
+      fall: {
+        speed: 40
+      },
+      run: {
+        speed: 20
+      },
+      getHit: {
+        speed: 20
+      },
+      dead: {
+        speed: 60
+      }
+    };
     this.getSpriteAnimations();
   }
 
@@ -86,7 +112,7 @@ export default class Player extends Entity {
       this.game.levelState === 'run'
     ) {
       this.state = 'run';
-      this.animationSpeed = 20;
+      this.animationSpeed = this.spriteProps[this.state].speed;
     }
 
     // handle collisions by collisionId
@@ -94,53 +120,34 @@ export default class Player extends Entity {
       case 0:
         break;
       case 1:
-        // collide with enemy
-        if (
-          !this.invulnerable &&
-          this.game.levelState === 'run' &&
-          !this.dead
-        ) {
-          this.hit = true;
-          this.invulnerable = true;
-          this.state = 'getHit';
-          this.animationFrame = 0;
-          this.animationSpeed = 20;
-          this.sfx_hit.play();
-          this.health -= 1;
-          if (this.health <= 0) {
-            this.die();
-          }
-          setTimeout(() => {
-            this.hit = false;
-          }, this.hitTime);
-          setTimeout(() => {
-            this.invulnerable = false;
-          }, this.invulnerableTime);
-        }
         break;
     }
   }
 
   move(deltaTime) {
-    if (!this.dead && this.game.levelState === 'run') {
-      if (this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
-        // freefall
-        this.ay = this.gravity;
-        this.animationSpeed = 40;
+    if (this.placeFree(this.hitbox.left, this.hitbox.bottom)) {
+      // freefall
+      this.ay = this.gravity;
+      if (!this.dead && this.game.levelState === 'run') {
         if (this.vy < 0 && !this.hit) this.state = 'jump';
         else if (this.vy > 0 && !this.hit) this.state = 'fall';
-      } else {
-        if (this.vy > 0) {
-          // land on ground
-          this.y = this.game.ground - this.hitbox.yOffset - this.hitbox.height;
-          this.vy = 0;
-          this.ay = 0;
+        this.animationSpeed = this.spriteProps[this.state].speed;
+      }
+    } else {
+      if (this.vy > 0) {
+        // land on ground
+        this.y = this.game.ground - this.hitbox.yOffset - this.hitbox.height;
+        this.vy = 0;
+        this.ay = 0;
+        if (!this.dead && this.game.levelState === 'run') {
           this.state = 'run';
-          this.animationSpeed = 20;
+          this.animationSpeed = this.spriteProps[this.state].speed;
         }
       }
+    }
 
-      // handle keyboard input
+    // handle keyboard input
+    if (!this.dead && this.game.levelState === 'run') {
       if (!this.hit && !this.dead) {
         if (this.input.keys.includes('ArrowRight')) {
           // run right
@@ -157,7 +164,7 @@ export default class Player extends Entity {
           this.input.keys.includes('Space') ||
           this.input.keys.includes('ArrowUp')
         ) {
-          if (this.hitbox.bottom >= this.game.canvasHeight - 18) {
+          if (this.hitbox.bottom >= this.game.ground) {
             // jump
             this.vy = -this.maxVy;
             this.ay = this.gravity;
@@ -165,23 +172,61 @@ export default class Player extends Entity {
           }
         }
       }
-
-      super.move(deltaTime);
     }
+    super.move(deltaTime);
   }
 
   die() {
     this.state = 'dead';
+    this.animationLoop = false;
+    this.animationFrame = 0;
+    this.animationSpeed = this.spriteProps[this.state].speed;
     this.dead = true;
     this.game.music.pause();
+    this.game.levelSpeed = 0;
     setTimeout(() => {
       this.state = 'idle';
-      this.animationSpeed = 40;
+      this.animationLoop = true;
+      this.animationFrame = 0;
+      this.animationSpeed = this.spriteProps[this.state].speed;
       this.x = this.game.playerStartX;
       this.y = this.game.playerStartY;
       this.health = this.startHealth;
       this.dead = false;
       this.game.startLevel();
     }, this.deadTime);
+  }
+
+  checkBounceOnEnemy(enemy) {
+    if (this.game.levelState === 'run' && !this.dead) {
+      // check if landing on enemy (falling from above)
+      if (this.hitbox.bottom < enemy.hitbox.bottom && this.vy > 0) {
+        enemy.bouncedOn();
+        // bounce
+        this.vy = -this.maxVy / 2;
+        this.ay = this.gravity;
+        this.sfx_jump.play();
+      } else {
+        // collide with enemy
+        if (!this.invulnerable) {
+          this.hit = true;
+          this.invulnerable = true;
+          this.state = 'getHit';
+          this.animationFrame = 0;
+          this.animationSpeed = this.spriteProps[this.state].speed;
+          this.sfx_hit.play();
+          this.health -= 1;
+          if (this.health <= 0) {
+            this.die();
+          }
+          setTimeout(() => {
+            this.hit = false;
+          }, this.hitTime);
+          setTimeout(() => {
+            this.invulnerable = false;
+          }, this.invulnerableTime);
+        }
+      }
+    }
   }
 }

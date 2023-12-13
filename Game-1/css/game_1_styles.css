@@ -100,3 +100,7 @@ p {
 .line-through {
   text-decoration: line-through;
 }
+
+#musicVolumeLabel {
+  color: white;
+}
