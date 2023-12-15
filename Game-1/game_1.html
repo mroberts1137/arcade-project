@@ -8,20 +8,24 @@
   </head>
   <body>
     <a href="../index.html">
-      <button>Back</button>
+      <button id="backBtn">Back</button>
     </a>
+
     <div class="container">
       <button id="pauseButton">Pause</button>
-      <button id="muteMusic">Music</button>
-      <input
-        type="range"
-        id="musicVolume"
-        name="musicVolume"
-        min="0"
-        max="100"
-      />
-      <label for="musicVolume" id="musicVolumeLabel">Music Volume</label>
+      <div class="slider-block">
+        <label for="musicVolume" id="musicVolumeLabel">Music Volume</label>
+        <input
+          type="range"
+          id="musicVolume"
+          name="musicVolume"
+          min="0"
+          max="100"
+        />
+      </div>
     </div>
+
+    <!-- Main Game Canvas -->
     <canvas id="canvas1"></canvas>
 
     <script type="module" src="./javascript/app.js"></script>

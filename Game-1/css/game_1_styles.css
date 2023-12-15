@@ -1,22 +1,114 @@
-#canvas1 {
-  border: solid black 5px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.container {
-  position: absolute;
-  width: 75%;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: #22182f;
+  background-image: linear-gradient(rgb(23, 0, 42), rgb(67, 7, 126));
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+#canvas1 {
+  border: solid black 5px;
+  position: relative;
+  top: 0px;
+  left: 50%;
+  transform: translate(-50%);
+  border-radius: 40px;
+  box-shadow: 5 0 20px white;
+  animation: boxshade 5s infinite;
+  background: #22182f;
+}
+
+.container {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 40%;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  height: 50px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.wrapper {
+  width: 820px;
+  height: 620px;
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translate(-50%);
+  border-radius: 40px;
+  box-shadow: 0 0 20px white;
+  animation: boxshade 5s infinite;
+  background: #22182f;
+}
+
+#backBtn {
+  width: 100px;
+  height: 50px;
+  margin-left: 10px;
+  margin-top: 10px;
+  padding: 5px;
+  position: absolute;
+  background: #184080;
+  border-radius: 5px;
+  box-shadow: 0 0 4px lrgb(56, 133, 241);
+  color: white;
+  font-size: 18px;
+  font-family: 'Coda', cursive;
+}
+
+#pauseButton {
+  width: 80px;
+  height: 35px;
+  margin: auto;
+  position: relative;
+  background: #184080;
+  border-radius: 5px;
+  box-shadow: 0 0 4px lrgb(56, 133, 241);
+  color: white;
+  display: inline;
+  font-size: 18px;
+  justify-content: center;
+  font-family: 'Coda', cursive;
+}
+
+.slider-block {
+  position: relative;
+  display: inline;
+}
+
+#musicVolumeLabel {
+  color: rgb(218, 167, 230);
+  display: block;
+  font-family: 'Coda', cursive;
+}
+
+/* boxes */
+
+.box {
+  width: 200px;
+  height: 300px;
+  margin-left: 400px;
+  margin-top: 50px;
+  padding: 50px;
+  position: absolute;
+  background: #0bcaff;
+  border-radius: 40px;
+  box-shadow: 0 0 20px lightblue;
+  color: white;
+}
+
+.wrapper .box:hover {
+  background-color: lightblue;
+  color: black;
+  cursor: pointer;
 }
 
 /* animations */
@@ -59,22 +151,12 @@ header {
   text-shadow: 0 0 20px white;
 }
 
-.wrapper {
-  width: 1100px;
-  height: 950px;
-  margin: 0 auto;
-  position: relative;
-  border-radius: 40px;
-  box-shadow: 0 0 20px white;
-  animation: boxshade 5s infinite;
-}
-
 /* boxes */
 
 .box {
   width: 200px;
   height: 300px;
-  margin-left: 400px;
+  margin-left: auto;
   margin-top: 50px;
   padding: 50px;
   position: absolute;
@@ -99,8 +181,4 @@ p {
 
 .line-through {
   text-decoration: line-through;
-}
-
-#musicVolumeLabel {
-  color: white;
 }

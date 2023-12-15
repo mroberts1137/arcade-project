@@ -57,10 +57,10 @@ window.addEventListener('load', () => {
       this.pauseButton.addEventListener('click', () => {
         this.pauseGame();
       });
-      this.muteButton = document.querySelector('#muteMusic');
-      this.muteButton.addEventListener('click', () => {
-        this.muteMusic();
-      });
+      // this.muteButton = document.querySelector('#muteMusic');
+      // this.muteButton.addEventListener('click', () => {
+      //   this.muteMusic();
+      // });
       this.volumeSlider = document.querySelector('#musicVolume');
       this.volumeSlider.addEventListener('input', (e) => {
         this.setVolume(e.target.value / 100);

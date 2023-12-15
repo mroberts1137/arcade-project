@@ -1,3 +1,10 @@
+/* * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+} */
+
 body {
   display: flex;
   flex-direction: column;
@@ -5,6 +12,7 @@ body {
   justify-content: center;
   position: relative;
   background: #22182f;
+  background-image: linear-gradient(rgb(23, 0, 42), rgb(67, 7, 126));
 }
 
 /* animations */
@@ -42,19 +50,20 @@ header {
   text-align: center;
   padding: 50px;
   font-family: 'Coda', cursive;
-  font-size: 100px;
+  font-size: 80px;
   color: #0bcaff;
   text-shadow: 0 0 20px white;
 }
 
 .wrapper {
-  width: 1100px;
-  height: 950px;
+  width: 800px;
+  height: 600px;
   margin: 0 auto;
   position: relative;
   border-radius: 40px;
   box-shadow: 0 0 20px white;
   animation: boxshade 5s infinite;
+  background: #22182f;
 }
 
 /* boxes */
@@ -62,10 +71,11 @@ header {
 .box {
   width: 200px;
   height: 300px;
-  margin-left: 400px;
-  margin-top: 50px;
+  margin: 50px auto;
   padding: 50px;
   position: absolute;
+  left: 50%;
+  transform: translate(-50%);
   background: #0bcaff;
   border-radius: 40px;
   box-shadow: 0 0 20px lightblue;
@@ -82,23 +92,18 @@ p {
   text-align: center;
   font-family: 'Coda', cursive;
   font-size: 50px;
-  margin-top: 40px;
+  margin-top: 0;
 }
 
 .game-icon {
   width: 200px;
   height: 200px;
   object-fit: cover;
+  margin: auto;
+  margin-top: -30px;
 }
 
 /* Instructions Modal */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", sans-serif;
-}
 
 .instructionsModal {
   display: flex;
@@ -121,7 +126,7 @@ p {
   position: absolute;
   z-index: 2;
   top: 20%;
-  background-color: white;
+  background-color: rgba(100, 94, 104, 0.703);
   border: 1px solid #ddd;
   border-radius: 15px;
 }
@@ -139,16 +144,20 @@ p {
   font-size: 0.9em;
 }
 
+.modal h3 {
+  color: #dcdcdc;
+}
+
 .modal p {
   font-size: 0.9rem;
-  color: #777;
+  color: #dcdcdc;
   margin: 0.4rem 0 0.2rem;
 }
 
 .modal ul {
   font-size: 0.9rem;
-  color: #777;
-  margin-left: 1rem
+  color: #b5b5b5;
+  margin-left: 1rem;
 }
 
 button {
@@ -161,7 +170,7 @@ button {
   display: inline-block;
   padding: 0.8rem 1.4rem;
   font-weight: 700;
-  background-color: #E76069;
+  background-color: #e76069;
   color: white;
   border-radius: 5px;
   text-align: center;
@@ -170,7 +179,7 @@ button {
 
 .btn-open {
   position: absolute;
-  bottom: 150px;
+  bottom: 60px;
 }
 
 .btn-close {
