@@ -7,7 +7,7 @@ You play as Robot Boy, running as fast as he can! Collect stars and watch out fo
 ### Controls
 
 Left/Right Arrow Keys: Move left/right\
-Up/Space Bar: Jump\\
+Up/Space Bar: Jump\
 
 Assets used with permission:
 
